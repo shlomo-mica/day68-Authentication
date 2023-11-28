@@ -20,7 +20,7 @@ db = SQLAlchemy()
 
 
 # CREATE TABLE IN DB
-class User(db.Model,UserMixin):  # ADD usermixin from the example
+class User(db.Model, UserMixin):  # ADD usermixin from the example
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
@@ -42,7 +42,9 @@ def load_user(id):
 def home():
     f = generate_password_hash(password='123456', method="pbkdf2", salt_length=2)
     print(f)
-    return render_template("index.html")
+    show=0
+
+    return render_template("index.html", isHide=show)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -56,18 +58,18 @@ def register():
 
         exist = db.session.query(User).filter_by(email=new_user.email).first()
         if exist:
-            flash("Email address have already exist")
-            print("noooooo")
+            flash("Email address have already exist", category="error")
+
 
         else:
             new_user.password = generate_password_hash(new_user.password, method="pbkdf2", salt_length=2)
-
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user, remember=True)
             first_time = new_user.name
-            flask.flash('Your account has been created! You are now able to log in', 'success')
+            flash('Your account has been created! You are now able to log in', 'success')
             # return redirect(f'/secrets/{first_time}')
+            return redirect(url_for('login'))
 
     return render_template('register.html')
 
@@ -77,13 +79,20 @@ def login():
     if request.method == 'POST':
         exist_user = User.query.all()  # CALL ALL RECORDS IN DATABASE
         user_login = User.query.filter_by(email=request.form.get('email')).first()
-        #load_user(user_login(user_login))
+        # load_user(user_login(user_login))
 
         if user_login:
             if check_password_hash(user_login.password, request.form.get('password')):
-                login_user(user_login,remember=True)
+                login_user(user_login, remember=True)
                 name_login = user_login.name
-                return redirect(url_for('secrets'))  # return redirect(f'/secrets/')  # TODO load_user(22)
+                flash("Login Succeed")
+                hide_menu = 0
+                return redirect(
+                    url_for('secrets', isHide=hide_menu))  # return redirect(f'/secrets/')  # TODO load_user(22)
+        else:
+            flash("wrong email or password")
+            # return redirect(url_for('secrets', isHide=False))  # return redirect(f'/secrets/')  # TODO load_user(22)
+
     return flask.render_template('login.html')
 
 
@@ -118,9 +127,6 @@ def secrets():
 def logout():
     logout_user()
     return redirect(url_for('home'))
-
-
-
 
 
 @app.route('/download/<filename>')

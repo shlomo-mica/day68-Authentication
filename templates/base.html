@@ -25,16 +25,20 @@
           </li>
           <!-- TODO: Hide the Login/Registration navigation for logged-in users -->
 
+          {% if isHide==0 %}
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('login') }}">Login</a>
             </li>
             <li class="nav-item">
                       <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+          {% endif %}
+            </li>
+          {% if isHide==1 %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
             </li>
 
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
-          </li>
+          {% endif %}
         </ul>
       </div>
     </nav>
